@@ -1,0 +1,97 @@
+#Loading libraries. 
+library(ncdf4)
+library(tidyverse)
+library(raster)
+library(giscoR)
+library(gstat)
+library(viridis)
+
+wd <- "E:/MCAST/Sent3/S3B_SL_2_LST____20210726T090312_20210726T090612_20210727T195150_0179_055_107_2340_LN2_O_NT_004.SEN3"
+
+#creating filepath names
+climate_filepath <- paste0(wd, "/LST_in.nc")
+cart_filepath <- paste0(wd, "/geodetic_in.nc")
+
+#reading them in using nc_open
+nc <- nc_open(climate_filepath)
+cord <-  nc_open(cart_filepath)
+
+lat <-  ncvar_get(cord, "latitude_in") %>% as.vector()
+lon <-  ncvar_get(cord, "longitude_in") %>% as.vector()
+LST <-  ncvar_get(nc, "LST") %>% as.vector()
+
+LST_DF = data.frame(lon = lon,
+                    lat = lat,
+                    LST = LST) %>%
+  #Filter only for Malta
+  filter(lat >= 35.7 & lat <=36.1 & lon >= 14.1 & lon <=14.6) %>% 
+  #Remove NA (sea temp) values
+  drop_na() %>% 
+  #Convert from Kelvin to C
+  mutate(LST = LST - 273.15)
+
+ggplot(LST_DF, aes(x = lon, y = lat, col = LST))+
+  geom_point()+
+  scale_color_viridis()+
+  theme_bw()
+
+#
+#
+
+coordinates(LST_DF) <-  ~lon+lat
+
+y.range <- as.double(c(35.75,36.15))
+x.range <- as.double(c(14.1,14.62))
+
+grid <- expand.grid(x=seq(from=x.range[1], 
+                          to=x.range[2], by=0.00130), #by = x max - x min/500
+                    y=seq(from=y.range[1], 
+                          to=y.range[2], by=0.00101))
+
+coordinates(grid)  <- ~x+y
+gridded(grid) <- TRUE
+
+plot(grid)
+points(LST_DF, col = "blue")
+
+#
+#
+
+idw_grid <- gstat::idw(formula = LST ~ 1, 
+                       locations = LST_DF, 
+                       newdata = grid,
+                       idp=3.0) %>% 
+  as.data.frame() %>% 
+  dplyr::select(-var1.var) %>% 
+  rename(lon = x, lat = y, lst = var1.pred) 
+
+ggplot(idw_grid, aes(x = lon, y = lat, fill = lst))+
+  geom_raster()+
+  scale_fill_viridis()
+
+#
+#
+
+#Shapefile
+mt <- gisco_get_countries(resolution = "01", country = "MLT")
+
+#Convert to raster, apply mask, then convert back to data frame.
+idw_raster <- idw_grid %>% 
+  rasterFromXYZ() %>% 
+  mask(mt, inverse = FALSE) %>% 
+  as.data.frame(xy = TRUE)
+
+ggplot()+
+  geom_sf(data = mt)+
+  geom_raster(data = idw_raster, 
+              aes(x=x, y=y, fill = lst), 
+              interpolate = T,
+              alpha = .7)+
+  scale_fill_viridis_c(option = "inferno")+
+  coord_sf()+
+  theme_bw()+
+  ylab("Latitude")+
+  xlab("Longitude")+
+  labs(title = "Land Surface Temperature",
+       subtitle = "As Observed by Sentinel 3B 27th July 2021 @9am")+ 
+  guides(fill=guide_legend(title="�Celsius"))
