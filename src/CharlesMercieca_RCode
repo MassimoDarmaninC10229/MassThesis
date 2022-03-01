@@ -6,7 +6,7 @@ library(giscoR)
 library(gstat)
 library(viridis)
 
-wd <- "C:\Sentinel 3 Data\2019\covid\April\S3B_SL_2_LST____20190406T204946_20190406T205246_20200819T215806_0179_024_043_0540_LR1_R_NT_004"
+wd <- "C:/Sentinel 3 Data/2019/covid/April/S3B_SL_2_LST____20190406T204946_20190406T205246_20200819T215806_0179_024_043_0540_LR1_R_NT_004" # nolint
 
 #creating filepath names
 climate_filepath <- paste0(wd, "/LST_in.nc")
