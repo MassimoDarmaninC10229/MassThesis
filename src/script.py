@@ -20,6 +20,8 @@ from rasterio.enums import Resampling
 import cartopy.crs as ccrs
 
 ##init variables
+File = jpy.get_type('java.io.File') #file type   
+
 pc_base_directory = ('C:/Sentinel 3 Data/') 
 laptop_base_directory = ('C:/Users/Massimo/Documents/SchoolFolder/ThirdYear/Thesis/SentinelData/2021/extra')
 
@@ -62,15 +64,18 @@ for root, dirs, files in os.walk(base_directory):
         time = path_name_30chars[25:29]
         time_format.append(time[:2] + ':' + time[2:])
 
-        ###Reading product 1 at a time        
-        File = jpy.get_type('java.io.File') #file type        
+        ###Reading product 1 at a time            
         archi=File(current_path) #product to be read
         product = ProductIO.readProduct(archi)
         reader = snappy.ProductIO.getProductReader('SEN3')
-        print('All Bands for product ' + path_name_30chars)
-        print(str(list(product.getBandNames())))
+        #print('All Bands for product ' + path_name_30chars)
+        #print(str(list(product.getBandNames())))
+
+        band = product.getBand('LST') # Assign Band to a variable
+        w = product.getSceneRasterWidth() # Get Band Width
+        h = product.getSceneRasterHeight() # Get Band Height
 '''
 print(full_name)  
 print(sat)
 print(date_format)
-print(time_format)'''
+print(time_format)''' 
