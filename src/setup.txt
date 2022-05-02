@@ -1,0 +1,14 @@
+conda create --name snap python=3.6
+conda activate snap
+conda install jupyter
+ipython kernel install --name "snap-venv" --user
+conda install -c conda-forge pandas
+conda install -c conda-forge rasterio  
+conda install -c conda-forge snappy 
+conda install -c conda-forge matplotlib 
+conda install -c conda-forge pyepsg
+conda install -c conda-forge gdal
+conda install -c conda-forge fiona
+conda clean –a
+
+https://towardsdatascience.com/getting-started-with-snap-toolbox-in-python-89e33594fa04
