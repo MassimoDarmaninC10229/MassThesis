@@ -9,6 +9,12 @@ conda install -c conda-forge matplotlib
 conda install -c conda-forge pyepsg
 conda install -c conda-forge gdal
 conda install -c conda-forge fiona
+conda install -c anaconda netcdf4
+conda install -c conda-forge snappy
+conda install geopandas
+conda install -c conda-forge cartopy
 conda clean –a
 
 https://towardsdatascience.com/getting-started-with-snap-toolbox-in-python-89e33594fa04
+
+snappy-conf C:\Users\Massimo\anaconda3\envs\snap\python.exe C:\Users\Massimo\anaconda3\envs\snap\Lib\
